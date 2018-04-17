@@ -40,9 +40,7 @@ public class CitiesIntentService extends IntentService {
             List<CityInfo> cities = fetchr.fetchCities(query);
 
             Bundle resultData = new Bundle();
-            ArrayList<String> autoCompleteData = populateData(cities);
-
-            resultData.putStringArrayList(FirstPageActivity.CITIES,autoCompleteData);
+            resultData.putParcelableArrayList(FirstPageActivity.CITIES,(ArrayList<CityInfo>)cities);
 
             Intent i = new Intent(ACTION_SHOW_NOTIFICATION);
             i.putExtras(resultData);
@@ -59,14 +57,5 @@ public class CitiesIntentService extends IntentService {
         Intent i = new Intent(packageContext,CitiesIntentService.class);
         i.putExtra(EXTRA_QUERY,query);
         return i;
-    }
-
-    private ArrayList<String> populateData(List<CityInfo> cities){
-        ArrayList<String> data = new ArrayList<>();
-        for(CityInfo city : cities){
-            String entry = String.format("%s, %s",city.getName(),city.getCountry());
-            data.add(entry);
-        }
-        return data;
     }
 }

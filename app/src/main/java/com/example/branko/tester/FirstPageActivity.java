@@ -9,17 +9,25 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.branko.tester.model.CityInfo;
 import com.example.branko.tester.services.CitiesIntentService;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class FirstPageActivity extends AppCompatActivity {
 
@@ -30,17 +38,26 @@ public class FirstPageActivity extends AppCompatActivity {
 
     private AutoCompleteTextView mAutocompleteTextViewFirstCity;
     private AutoCompleteTextView mAutocompleteTextViewSecondCity;
+    private Button mCompareButton;
+    private CityInfo mFirstCity;
+    private CityInfo mSecondCity;
+
+    private List<CityInfo> mFirstCityAutocompleteData;
+    private List<CityInfo> mSecondCityAutocompleteData;
 
     private BroadcastReceiver onShowCitiesNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            List<String> autoCompleteData = intent.getStringArrayListExtra(CITIES);
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_dropdown_item_1line,autoCompleteData);
+            List<CityInfo> cities = intent.getExtras().getParcelableArrayList(CITIES);
             String city = intent.getStringExtra(AUTOCOMPLETETEXTVIEWNAME);
+            List<String> autoCompleteData = fillAutoCompleteData(cities);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_dropdown_item_1line,autoCompleteData);
             if(city.equals(FIRST_CITY)) {
+                mFirstCityAutocompleteData = cities;
                 mAutocompleteTextViewFirstCity.setAdapter(adapter);
             }
             else if(city.equals(SECOND_CITY)) {
+                mSecondCityAutocompleteData = cities;
                 mAutocompleteTextViewSecondCity.setAdapter(adapter);
             }
 
@@ -54,6 +71,9 @@ public class FirstPageActivity extends AppCompatActivity {
         initResources();
         bindTextEventListener(mAutocompleteTextViewFirstCity, FIRST_CITY);
         bindTextEventListener(mAutocompleteTextViewSecondCity, SECOND_CITY);
+        bindItemClickEventListenerForFirstCity();
+        bindItemClickEventListenerForSecondCity();
+        bindComapreClickEventListener();
     }
 
     @Override
@@ -72,6 +92,9 @@ public class FirstPageActivity extends AppCompatActivity {
     private void initResources(){
         mAutocompleteTextViewFirstCity = findViewById(R.id.firstCityAutoCompleteTextView);
         mAutocompleteTextViewSecondCity = findViewById(R.id.secondCityAutoCompleteTextView);
+        mCompareButton = findViewById(R.id.compareButton);
+        mFirstCity = null;
+        mSecondCity = null;
     }
 
     public void bindTextEventListener(final AutoCompleteTextView autocompleteTextView, final String autocompelteName){
@@ -82,6 +105,12 @@ public class FirstPageActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(autocompelteName.equals(FIRST_CITY)){
+                    mFirstCity = null;
+                }
+                if(autocompelteName.equals(SECOND_CITY)){
+                    mSecondCity = null;
+                }
                 if(charSequence.length() > 2) {
                     String input = charSequence.toString().toLowerCase();
                     String output = input.substring(0, 1).toUpperCase() + input.substring(1);
@@ -98,4 +127,54 @@ public class FirstPageActivity extends AppCompatActivity {
         });
     }
 
+    public List<String> fillAutoCompleteData(List<CityInfo> cities) {
+        List<String> autocompleteData = new ArrayList<>();
+        for(CityInfo city : cities){
+            autocompleteData.add(city.toString());
+        }
+        return autocompleteData;
+    }
+
+    private void bindItemClickEventListenerForFirstCity() {
+        mAutocompleteTextViewFirstCity.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                hideKeyboard();
+                mFirstCity = mFirstCityAutocompleteData.get(i);
+            }
+        });
+    }
+
+    private void bindItemClickEventListenerForSecondCity() {
+        mAutocompleteTextViewSecondCity.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                hideKeyboard();
+                mSecondCity = mSecondCityAutocompleteData.get(i);
+            }
+        });
+    }
+
+    private void bindComapreClickEventListener() {
+        mCompareButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                hideKeyboard();
+                if(mFirstCity != null && mSecondCity != null) {
+                    String info = String.format("lat1: %f, lat2: %f, lng1: %f, lng2: %f",mFirstCity.getLat(), mFirstCity.getLon(), mSecondCity.getLat(),mSecondCity.getLon());
+                    Toast.makeText(FirstPageActivity.this, info, Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(FirstPageActivity.this, "Mora da selektirate dva grada", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void hideKeyboard() {
+        View view = FirstPageActivity.this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(),0);
+        }
+    }
 }
