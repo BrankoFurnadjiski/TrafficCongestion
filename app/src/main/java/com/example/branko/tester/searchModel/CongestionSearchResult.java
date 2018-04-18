@@ -11,8 +11,8 @@ import java.util.List;
  */
 
 public class CongestionSearchResult {
-    private TrafficCongestion city1 = new TrafficCongestion();
-    private TrafficCongestion city2 = new TrafficCongestion();
+    private TrafficCongestion city1;
+    private TrafficCongestion city2;
 
     public List<TrafficCongestion> getSearchResult(){
         return new ArrayList<>(Arrays.asList(city1,city2));

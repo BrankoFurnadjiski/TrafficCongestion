@@ -51,7 +51,7 @@ public class FirstPageActivity extends AppCompatActivity {
             List<CityInfo> cities = intent.getExtras().getParcelableArrayList(CITIES);
             String city = intent.getStringExtra(AUTOCOMPLETETEXTVIEWNAME);
             List<String> autoCompleteData = fillAutoCompleteData(cities);
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_dropdown_item_1line,autoCompleteData);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),R.layout.autocomplete_dropdown_item,autoCompleteData);
             if(city.equals(FIRST_CITY)) {
                 mFirstCityAutocompleteData = cities;
                 mAutocompleteTextViewFirstCity.setAdapter(adapter);
@@ -91,13 +91,15 @@ public class FirstPageActivity extends AppCompatActivity {
 
     private void initResources(){
         mAutocompleteTextViewFirstCity = findViewById(R.id.firstCityAutoCompleteTextView);
+        mAutocompleteTextViewFirstCity.setThreshold(3);
         mAutocompleteTextViewSecondCity = findViewById(R.id.secondCityAutoCompleteTextView);
+        mAutocompleteTextViewSecondCity.setThreshold(3);
         mCompareButton = findViewById(R.id.compareButton);
         mFirstCity = null;
         mSecondCity = null;
     }
 
-    public void bindTextEventListener(final AutoCompleteTextView autocompleteTextView, final String autocompelteName){
+    public void bindTextEventListener(final AutoCompleteTextView autocompleteTextView, final String autocompleteName){
         autocompleteTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -105,17 +107,17 @@ public class FirstPageActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(autocompelteName.equals(FIRST_CITY)){
+                if(autocompleteName.equals(FIRST_CITY)){
                     mFirstCity = null;
                 }
-                if(autocompelteName.equals(SECOND_CITY)){
+                if(autocompleteName.equals(SECOND_CITY)){
                     mSecondCity = null;
                 }
                 if(charSequence.length() > 2) {
                     String input = charSequence.toString().toLowerCase();
                     String output = input.substring(0, 1).toUpperCase() + input.substring(1);
                     Intent intent = CitiesIntentService.newIntent(getApplicationContext(), output);
-                    intent.putExtra(AUTOCOMPLETETEXTVIEWNAME, autocompelteName);
+                    intent.putExtra(AUTOCOMPLETETEXTVIEWNAME, autocompleteName);
                     startService(intent);
                 }
             }
@@ -160,11 +162,11 @@ public class FirstPageActivity extends AppCompatActivity {
             public void onClick(View v) {
                 hideKeyboard();
                 if(mFirstCity != null && mSecondCity != null) {
-                    String info = String.format("lat1: %f, lat2: %f, lng1: %f, lng2: %f",mFirstCity.getLat(), mFirstCity.getLon(), mSecondCity.getLat(),mSecondCity.getLon());
-                    Toast.makeText(FirstPageActivity.this, info, Toast.LENGTH_SHORT).show();
+                    Intent intent = DetailsActivity.newIntent(FirstPageActivity.this,mFirstCity,mSecondCity);
+                    startActivity(intent);
                 }
                 else{
-                    Toast.makeText(FirstPageActivity.this, "Mora da selektirate dva grada", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FirstPageActivity.this, "You must choose two cities!", Toast.LENGTH_SHORT).show();
                 }
             }
         });

@@ -3,6 +3,7 @@ package com.example.branko.tester.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.net.URLClassLoader;
 import java.util.List;
 
 /**
@@ -15,7 +16,8 @@ public class CityInfo implements Parcelable {
     private String country;
     private double lat;
     private double lon;
-    //private TrafficCongestion congestion;
+    private TrafficCongestion congestion;
+    private float co2;
 
     public CityInfo()
     {
@@ -36,6 +38,32 @@ public class CityInfo implements Parcelable {
 
     public double getLon() { return lon; }
 
+    public TrafficCongestion getCongestion(){
+        return congestion;
+    }
+
+    public void setCongestion(TrafficCongestion congestion){
+        this.congestion = new TrafficCongestion();
+        this.congestion.setBrown(congestion.getBrown());
+        this.congestion.setGreen(congestion.getGreen());
+        this.congestion.setGrey(congestion.getGrey());
+        this.congestion.setOrange(congestion.getOrange());
+        this.congestion.setRed(congestion.getRed());
+    }
+
+    public float getCo2() {
+        return co2;
+    }
+
+    public void setCo2(float co2){
+        this.co2 = co2;
+    }
+
+    public String forToast() {
+        return String.format("Name: %s, Congestion: %s, co2: %f", name, congestion.toString(), co2).toString();
+    }
+
+
     @Override
     public int describeContents() {
         return 0;
@@ -46,6 +74,8 @@ public class CityInfo implements Parcelable {
         out.writeString(country);
         out.writeDouble(lat);
         out.writeDouble(lon);
+        out.writeParcelable(congestion,flags);
+        out.writeFloat(co2);
     }
 
     public static final Parcelable.Creator<CityInfo> CREATOR
@@ -64,6 +94,8 @@ public class CityInfo implements Parcelable {
         country = in.readString();
         lat = in.readDouble();
         lon = in.readDouble();
+        congestion = in.readParcelable(TrafficCongestion.class.getClassLoader());
+        co2 = in.readFloat();
     }
 
     public String toString() {
