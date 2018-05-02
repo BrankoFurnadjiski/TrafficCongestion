@@ -73,7 +73,7 @@ public class FirstPageActivity extends AppCompatActivity {
         bindTextEventListener(mAutocompleteTextViewSecondCity, SECOND_CITY);
         bindItemClickEventListenerForFirstCity();
         bindItemClickEventListenerForSecondCity();
-        bindComapreClickEventListener();
+        bindCompareClickEventListener();
     }
 
     @Override
@@ -157,7 +157,7 @@ public class FirstPageActivity extends AppCompatActivity {
         });
     }
 
-    private void bindComapreClickEventListener() {
+    private void bindCompareClickEventListener() {
         mCompareButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 hideKeyboard();

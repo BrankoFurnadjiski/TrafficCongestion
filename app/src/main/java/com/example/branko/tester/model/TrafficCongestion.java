@@ -7,22 +7,22 @@ import android.os.Parcelable;
 import com.github.mikephil.charting.data.PieEntry;
 
 import java.util.ArrayList;
-import java.util.List;
 /**
  * Created by Branko on 4/16/2018.
  */
 
 public class TrafficCongestion implements Parcelable {
 
-    public TrafficCongestion(){
-
-    }
-
     private double brown;
     private double red;
     private double orange;
     private double green;
     private double grey;
+    private double cars;
+
+    public TrafficCongestion(){
+
+    }
 
     public double getBrown() {
         return brown;
@@ -44,6 +44,8 @@ public class TrafficCongestion implements Parcelable {
         return grey;
     }
 
+    public double getCars() { return cars; }
+
     public void setBrown(double brown) {
         this.brown = brown;
     }
@@ -64,8 +66,10 @@ public class TrafficCongestion implements Parcelable {
         this.grey = grey;
     }
 
+    public void setCars(double cars) {  this.cars = cars; }
+
     public String toString(){
-        return String.format("brown: %f, red: %f, orange: %f, green: %f", brown, red, orange, green).toString();
+        return String.format("brown: %f, red: %f, orange: %f, green: %f, cars: %f", brown, red, orange, green, cars).toString();
     }
 
     public int describeContents() {
@@ -78,6 +82,7 @@ public class TrafficCongestion implements Parcelable {
         out.writeDouble(orange);
         out.writeDouble(green);
         out.writeDouble(grey);
+        out.writeDouble(cars);
     }
 
     public static final Parcelable.Creator<TrafficCongestion> CREATOR
@@ -97,26 +102,17 @@ public class TrafficCongestion implements Parcelable {
         orange = in.readDouble();
         green = in.readDouble();
         grey = in.readDouble();
+        cars = in.readDouble();
     }
 
-    public ArrayList<PieEntry> getPieEntries()
-    {
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        entries.add(new PieEntry(Float.valueOf(String.format("%f",brown)),"brown"));
-        entries.add(new PieEntry(Float.valueOf(String.format("%f",red)),"red"));
-        entries.add(new PieEntry(Float.valueOf(String.format("%f",orange)),"orange"));
-        entries.add(new PieEntry(Float.valueOf(String.format("%f",green)),"green"));
-        entries.add(new PieEntry(Float.valueOf(String.format("%f",grey)),"grey"));
-        return entries;
-    }
-
-    public ArrayList<Integer> getColors() {
-        ArrayList<Integer> colors = new ArrayList<>();
-        colors.add(Color.parseColor("brown"));
-        colors.add(Color.RED);
-        colors.add(Color.parseColor("orange"));
-        colors.add(Color.GREEN);
-        colors.add(Color.parseColor("grey"));
-        return colors;
+    public ArrayList<Double> getPercentValue(){
+        double sum = brown + red + orange + green + grey;
+        ArrayList<Double> values = new ArrayList<>();
+        values.add(brown/sum);
+        values.add(red/sum);
+        values.add(orange/sum);
+        values.add(green/sum);
+        values.add(grey/sum);
+        return values;
     }
 }

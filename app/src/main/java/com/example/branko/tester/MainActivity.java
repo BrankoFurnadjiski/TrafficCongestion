@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
         PieData data = new PieData(dataSet);
 
-        PieChart pieChart = (PieChart) findViewById(id);
+        PieChart pieChart = findViewById(id);
         pieChart.setData(data);
         pieChart.setUsePercentValues(true);
     }

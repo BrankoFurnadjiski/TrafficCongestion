@@ -53,6 +53,7 @@ public class CityDetailsIntentService extends IntentService {
                     secondCity.setCo2(co2.getCo2());
                 }
             }
+
             firstCity.setCongestion(congestions.get(0));
             secondCity.setCongestion(congestions.get(1));
 
