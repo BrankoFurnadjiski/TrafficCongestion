@@ -5,4 +5,7 @@
     <string name="clear_search">Clear Search</string>
     <string name="first_city">Enter first city!</string>
     <string name="second_city">Enter second city!</string>
+    <string name="traffic_intensity">Traffic intensity</string>
+    <string name="co2_index">CO2 Index</string>
+    <string name="map">Map</string>
 </resources>

@@ -4,11 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
+import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -26,6 +29,7 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -45,20 +49,24 @@ public class FirstPageActivity extends AppCompatActivity {
     private List<CityInfo> mFirstCityAutocompleteData;
     private List<CityInfo> mSecondCityAutocompleteData;
 
+    private ArrayAdapter<String> mAdapter;
+
     private BroadcastReceiver onShowCitiesNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             List<CityInfo> cities = intent.getExtras().getParcelableArrayList(CITIES);
             String city = intent.getStringExtra(AUTOCOMPLETETEXTVIEWNAME);
             List<String> autoCompleteData = fillAutoCompleteData(cities);
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),R.layout.autocomplete_dropdown_item,autoCompleteData);
+            mAdapter.clear();
+            mAdapter.addAll(autoCompleteData);
+            mAdapter.notifyDataSetChanged();
             if(city.equals(FIRST_CITY)) {
                 mFirstCityAutocompleteData = cities;
-                mAutocompleteTextViewFirstCity.setAdapter(adapter);
+                mAutocompleteTextViewFirstCity.setAdapter(mAdapter);
             }
             else if(city.equals(SECOND_CITY)) {
                 mSecondCityAutocompleteData = cities;
-                mAutocompleteTextViewSecondCity.setAdapter(adapter);
+                mAutocompleteTextViewSecondCity.setAdapter(mAdapter);
             }
 
         }
@@ -69,6 +77,7 @@ public class FirstPageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first_page);
         initResources();
+        bindRootLayoutViewEventListener();
         bindTextEventListener(mAutocompleteTextViewFirstCity, FIRST_CITY);
         bindTextEventListener(mAutocompleteTextViewSecondCity, SECOND_CITY);
         bindItemClickEventListenerForFirstCity();
@@ -91,9 +100,8 @@ public class FirstPageActivity extends AppCompatActivity {
 
     private void initResources(){
         mAutocompleteTextViewFirstCity = findViewById(R.id.firstCityAutoCompleteTextView);
-        mAutocompleteTextViewFirstCity.setThreshold(3);
         mAutocompleteTextViewSecondCity = findViewById(R.id.secondCityAutoCompleteTextView);
-        mAutocompleteTextViewSecondCity.setThreshold(3);
+        mAdapter = new ArrayAdapter<>(getApplicationContext(),R.layout.autocomplete_dropdown_item);
         mCompareButton = findViewById(R.id.compareButton);
         mFirstCity = null;
         mSecondCity = null;
@@ -113,7 +121,7 @@ public class FirstPageActivity extends AppCompatActivity {
                 if(autocompleteName.equals(SECOND_CITY)){
                     mSecondCity = null;
                 }
-                if(charSequence.length() > 2) {
+                if(charSequence.length() > 1) {
                     String input = charSequence.toString().toLowerCase();
                     String output = input.substring(0, 1).toUpperCase() + input.substring(1);
                     Intent intent = CitiesIntentService.newIntent(getApplicationContext(), output);
@@ -135,6 +143,19 @@ public class FirstPageActivity extends AppCompatActivity {
             autocompleteData.add(city.toString());
         }
         return autocompleteData;
+    }
+
+    private void bindRootLayoutViewEventListener() {
+        View view = findViewById(R.id.rootView);
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                mAutocompleteTextViewFirstCity.clearFocus();
+                mAutocompleteTextViewSecondCity.clearFocus();
+                hideKeyboard();
+                return true;
+            }
+        });
     }
 
     private void bindItemClickEventListenerForFirstCity() {
