@@ -3,6 +3,7 @@
     package="com.example.branko.tester">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -25,23 +26,31 @@
         <service
             android:name=".services.CitiesIntentService"
             android:exported="false" />
+
         <service
             android:name=".services.CityDetailsIntentService"
             android:exported="false" />
 
-            <activity android:name=".FirstPageActivity">
+            <activity
+                android:name=".FirstPageActivity"
+                android:screenOrientation="portrait">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
 
                     <category android:name="android.intent.category.LAUNCHER" />
                 </intent-filter>
 
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-        </activity>
-        <activity android:name=".DetailsActivity" />
-        <activity android:name=".MapActivity"></activity>
+                <meta-data
+                    android:name="android.app.searchable"
+                    android:resource="@xml/searchable" />
+            </activity>
+        <activity
+            android:name=".DetailsActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".MapActivity"
+            android:screenOrientation="portrait"/>
+
     </application>
 
 </manifest>

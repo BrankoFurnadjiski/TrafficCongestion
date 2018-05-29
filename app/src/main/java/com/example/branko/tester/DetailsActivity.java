@@ -6,11 +6,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.media.Image;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,6 +18,10 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.branko.tester.model.CityInfo;
 import com.example.branko.tester.services.CityDetailsIntentService;
+import com.example.branko.tester.utils.AlertDialogBuilder;
+import com.example.branko.tester.utils.InternetBroadcastReceiver;
+import com.example.branko.tester.utils.InternetConnectionChecker;
+import com.example.branko.tester.utils.StatusBarChanger;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.BarData;
@@ -32,7 +35,6 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.squareup.picasso.Picasso;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -60,12 +62,18 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView mSecondCityName;
     private ImageView mLoadingGifImageView;
 
+    private AlertDialog mAlertDialog;
+
+    private boolean mRefreshingState;
+    private boolean mLoadingState;
 
     // USED
     private BroadcastReceiver mOnShowCityDetailsNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             initComponentsForDisplay();
+            mLoadingState = false;
+            mRefreshingState = false;
             mFirstCity = intent.getExtras().getParcelable(EXTRA_FIRST_CITY);
             mSecondCity = intent.getExtras().getParcelable(EXTRA_SECOND_CITY);
             // POPULATE DATA
@@ -80,13 +88,33 @@ public class DetailsActivity extends AppCompatActivity {
         }
     };
 
+    private BroadcastReceiver mOnInternetStateChangeNotification = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(mLoadingState && !InternetConnectionChecker.haveNetworkConnection(DetailsActivity.this)){
+                mAlertDialog.show();
+            } else if(mLoadingState && InternetConnectionChecker.haveNetworkConnection(DetailsActivity.this) && mAlertDialog.isShowing()){
+                startCityDetailsIntentService();
+                mAlertDialog.hide();
+            } else if(mRefreshingState && !InternetConnectionChecker.haveNetworkConnection(DetailsActivity.this)){
+                mAlertDialog.show();
+            } else if(mRefreshingState && InternetConnectionChecker.haveNetworkConnection(DetailsActivity.this) && mAlertDialog.isShowing()) {
+                startCityDetailsIntentService();
+                mAlertDialog.hide();
+            }
+        }
+    };
+
     // USED
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        StatusBarChanger.changeColorForStatusBar(this);
         setContentView(R.layout.activity_loading);
-        initViewForGif();
+        initStates();
         getIntentData();
+        initViewForGif();
+        initAlertDialog();
     }
 
     @Override
@@ -94,6 +122,7 @@ public class DetailsActivity extends AppCompatActivity {
         super.onStart();
         IntentFilter filter = new IntentFilter(CityDetailsIntentService.ACTION_SHOW_NOTIFICATION);
         registerReceiver(mOnShowCityDetailsNotification, filter);
+        InternetBroadcastReceiver.registerReceiver(mOnInternetStateChangeNotification, DetailsActivity.this);
         startCityDetailsIntentService();
     }
 
@@ -101,6 +130,7 @@ public class DetailsActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         unregisterReceiver(mOnShowCityDetailsNotification);
+        InternetBroadcastReceiver.unregisterReceiver(mOnInternetStateChangeNotification, DetailsActivity.this);
     }
 
     // USED
@@ -123,9 +153,20 @@ public class DetailsActivity extends AppCompatActivity {
         return intent;
     }
 
+    private void initStates() {
+        mRefreshingState = false;
+        mLoadingState = false;
+    }
+
     private void initViewForGif() {
         mLoadingGifImageView = findViewById(R.id.loadingGif);
         loadGifIntoGifImageView();
+        mLoadingState = true;
+    }
+
+    private void initAlertDialog() {
+        mAlertDialog = AlertDialogBuilder.initAlertDialog(this,DetailsActivity.this);
+        mAlertDialog.setCanceledOnTouchOutside(false);
     }
 
     private void loadGifIntoGifImageView() {
@@ -171,7 +212,7 @@ public class DetailsActivity extends AppCompatActivity {
         mFirstCityCO2PieChart = findViewById(R.id.firstCityCO2PieChart);
         mSecondCityTrafficPieChart = findViewById(R.id.secondCityTrafficPieChart);
         mSecondCityCO2PieChart = findViewById(R.id.secondCityCO2PieChart);
-        bindhartValueSelectedListenerForTrafficPieCharts();
+        bindChartValueSelectedListenerForTrafficPieCharts();
     }
 
     private void initBarChart() {
@@ -238,7 +279,7 @@ public class DetailsActivity extends AppCompatActivity {
         co2PieChart.setData(data);
         co2PieChart.setUsePercentValues(true);
         co2PieChart.invalidate();
-        co2PieChart.setCenterText(String.format("%.1f", cityInfo.getCO2PieChartCenterValue()));
+        co2PieChart.setCenterText(String.format(Locale.US,"%.1f", cityInfo.getCO2PieChartCenterValue()));
         co2PieChart.setHoleRadius(80f);
         co2PieChart.setCenterTextSize(34);
         co2PieChart.setHoleColor(Color.parseColor("#00000000"));
@@ -310,11 +351,11 @@ public class DetailsActivity extends AppCompatActivity {
         });
     }
 
-    private void bindhartValueSelectedListenerForTrafficPieCharts() {
+    private void bindChartValueSelectedListenerForTrafficPieCharts() {
         mFirstCityTrafficPieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                mFirstCityTrafficPieChart.setCenterText(String.format("%s:\n %.2f%%", ((PieEntry) e).getLabel(), ((PieEntry) e).getValue()));
+                mFirstCityTrafficPieChart.setCenterText(String.format(Locale.US,"%s:\n %.2f%%", ((PieEntry) e).getLabel(), ((PieEntry) e).getValue()));
             }
 
             @Override
@@ -326,7 +367,7 @@ public class DetailsActivity extends AppCompatActivity {
         mSecondCityTrafficPieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                mSecondCityTrafficPieChart.setCenterText(String.format("%s:\n %.2f%%", ((PieEntry) e).getLabel(), ((PieEntry) e).getValue()));
+                mSecondCityTrafficPieChart.setCenterText(String.format(Locale.US,"%s:\n %.2f%%", ((PieEntry) e).getLabel(), ((PieEntry) e).getValue()));
             }
 
             @Override
@@ -340,16 +381,17 @@ public class DetailsActivity extends AppCompatActivity {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                startCityDetailsIntentService();
+                mRefreshingState = true;
+                if(!InternetConnectionChecker.haveNetworkConnection(DetailsActivity.this)){
+                    mAlertDialog.show();
+                } else {
+                    startCityDetailsIntentService();
+                }
             }
         });
     }
 
     private void setChartsAfterSwipe() {
-        /*if(mFirstCityClicedEntry != null)
-            mFirstCityTrafficPieChart.setCenterText(String.format("%s:\n %.2f%%", mFirstCityClicedEntry.getLabel(),mFirstCityClicedEntry.getValue()));
-        if(mSecondCityClicedEntry != null)
-            mFirstCityTrafficPieChart.setCenterText(String.format("%s:\n %.2f%%", mSecondCityClicedEntry.getLabel(),mSecondCityClicedEntry.getValue()));*/
         mFirstCityTrafficPieChart.highlightValue(null);
         mSecondCityTrafficPieChart.highlightValue(null);
         mSwipeRefreshLayout.setRefreshing(false);

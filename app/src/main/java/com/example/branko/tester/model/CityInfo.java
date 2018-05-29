@@ -66,11 +66,6 @@ public class CityInfo implements Parcelable {
         this.co2 = co2;
     }
 
-    public String forToast() {
-        return String.format("Name: %s, Congestion: %s, co2: %f", name, congestion.toString(), co2).toString();
-    }
-
-
     @Override
     public int describeContents() {
         return 0;

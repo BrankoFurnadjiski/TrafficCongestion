@@ -1,16 +1,18 @@
 package com.example.branko.tester;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.AssetManager;
-import android.graphics.Typeface;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -18,20 +20,16 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.branko.tester.model.CityInfo;
 import com.example.branko.tester.services.CitiesIntentService;
-
-import org.w3c.dom.Text;
+import com.example.branko.tester.utils.AlertDialogBuilder;
+import com.example.branko.tester.utils.InternetBroadcastReceiver;
+import com.example.branko.tester.utils.StatusBarChanger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 public class FirstPageActivity extends AppCompatActivity {
 
@@ -39,10 +37,13 @@ public class FirstPageActivity extends AppCompatActivity {
     public static String SECOND_CITY = "SecondCity";
     public static String AUTOCOMPLETETEXTVIEWNAME = "autocompleteTextViewName";
     public static String CITIES = "cities";
+    private static final int MY_PERMISSIONS_REQUEST_INTERNET = 666;
 
     private AutoCompleteTextView mAutocompleteTextViewFirstCity;
     private AutoCompleteTextView mAutocompleteTextViewSecondCity;
+
     private Button mCompareButton;
+
     private CityInfo mFirstCity;
     private CityInfo mSecondCity;
 
@@ -51,7 +52,7 @@ public class FirstPageActivity extends AppCompatActivity {
 
     private ArrayAdapter<String> mAdapter;
 
-    private BroadcastReceiver onShowCitiesNotification = new BroadcastReceiver() {
+    private BroadcastReceiver mOnShowCitiesNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             List<CityInfo> cities = intent.getExtras().getParcelableArrayList(CITIES);
@@ -72,39 +73,57 @@ public class FirstPageActivity extends AppCompatActivity {
         }
     };
 
+    private AlertDialog mAlertDialog;
+
+    private BroadcastReceiver mOnInternetStateChangeNotification = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            AlertDialogBuilder.displayAlertDialogFirstActivity  (context, mAlertDialog);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        StatusBarChanger.changeColorForStatusBar(this);
         setContentView(R.layout.activity_first_page);
         initResources();
-        bindRootLayoutViewEventListener();
         bindTextEventListener(mAutocompleteTextViewFirstCity, FIRST_CITY);
         bindTextEventListener(mAutocompleteTextViewSecondCity, SECOND_CITY);
         bindItemClickEventListenerForFirstCity();
         bindItemClickEventListenerForSecondCity();
         bindCompareClickEventListener();
+        checkForInternetPermission();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        IntentFilter filter = new IntentFilter(CitiesIntentService.ACTION_SHOW_NOTIFICATION);
-        registerReceiver(onShowCitiesNotification,filter);
+        InternetBroadcastReceiver.registerReceiver(mOnInternetStateChangeNotification, FirstPageActivity.this);
+        IntentFilter citiesFilter = new IntentFilter(CitiesIntentService.ACTION_SHOW_NOTIFICATION);
+        registerReceiver(mOnShowCitiesNotification,citiesFilter);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unregisterReceiver(onShowCitiesNotification);
+        unregisterReceiver(mOnShowCitiesNotification);
+        InternetBroadcastReceiver.unregisterReceiver(mOnInternetStateChangeNotification, FirstPageActivity.this);
     }
 
     private void initResources(){
+        initAlertDialog();
         mAutocompleteTextViewFirstCity = findViewById(R.id.firstCityAutoCompleteTextView);
         mAutocompleteTextViewSecondCity = findViewById(R.id.secondCityAutoCompleteTextView);
         mAdapter = new ArrayAdapter<>(getApplicationContext(),R.layout.autocomplete_dropdown_item);
         mCompareButton = findViewById(R.id.compareButton);
         mFirstCity = null;
         mSecondCity = null;
+    }
+
+    private void initAlertDialog() {
+        mAlertDialog = AlertDialogBuilder.initAlertDialog(this,FirstPageActivity.this);
+        mAlertDialog.setCanceledOnTouchOutside(false);
     }
 
     public void bindTextEventListener(final AutoCompleteTextView autocompleteTextView, final String autocompleteName){
@@ -145,17 +164,12 @@ public class FirstPageActivity extends AppCompatActivity {
         return autocompleteData;
     }
 
-    private void bindRootLayoutViewEventListener() {
-        View view = findViewById(R.id.rootView);
-        view.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                mAutocompleteTextViewFirstCity.clearFocus();
-                mAutocompleteTextViewSecondCity.clearFocus();
-                hideKeyboard();
-                return true;
-            }
-        });
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        mAutocompleteTextViewFirstCity.clearFocus();
+        mAutocompleteTextViewSecondCity.clearFocus();
+        hideKeyboard();
+        return true;
     }
 
     private void bindItemClickEventListenerForFirstCity() {
@@ -187,7 +201,7 @@ public class FirstPageActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
                 else{
-                    Toast.makeText(FirstPageActivity.this, "You must choose two cities!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FirstPageActivity.this, getString(R.string.first_page_toast_info), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -200,4 +214,13 @@ public class FirstPageActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(),0);
         }
     }
+
+    private void checkForInternetPermission(){
+        if(ContextCompat.checkSelfPermission(FirstPageActivity.this, Manifest.permission.INTERNET)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(FirstPageActivity.this,new String[] {Manifest.permission.INTERNET}, MY_PERMISSIONS_REQUEST_INTERNET);
+        }
+    }
+
+
+
 }
