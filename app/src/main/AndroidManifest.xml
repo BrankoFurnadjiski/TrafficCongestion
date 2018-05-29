@@ -12,11 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
@@ -26,31 +24,32 @@
         <service
             android:name=".services.CitiesIntentService"
             android:exported="false" />
-
         <service
             android:name=".services.CityDetailsIntentService"
             android:exported="false" />
 
-            <activity
-                android:name=".FirstPageActivity"
-                android:screenOrientation="portrait">
-                <intent-filter>
-                    <action android:name="android.intent.action.MAIN" />
+        <activity
+            android:name=".FirstPageActivity"
+            android:screenOrientation="portrait">
 
-                    <category android:name="android.intent.category.LAUNCHER" />
-                </intent-filter>
-
-                <meta-data
-                    android:name="android.app.searchable"
-                    android:resource="@xml/searchable" />
-            </activity>
+        </activity>
         <activity
             android:name=".DetailsActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MapActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
+        <activity android:name=".CitiesActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
     </application>
 
 </manifest>

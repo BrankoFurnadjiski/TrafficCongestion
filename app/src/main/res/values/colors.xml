@@ -5,4 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="bgColor">#F78F1E</color>
     <color name="statusBarColor">#000000</color>
+    <color name="whiteFont">#cccccc</color>
+    <color name="blackBackground">#111111</color>
+    <color name="borderColor">#999999</color>
 </resources>

@@ -20,8 +20,12 @@ import java.util.List;
 
 public class CitiesIntentService extends IntentService {
 
-    private static String EXTRA_QUERY="com.example.branko.tester.services.query";
+    private static final String EXTRA_QUERY="com.example.branko.tester.services.query";
+    private static final String ARRAY_LIST_QUERY_RESULT = "com.example.branko.tester.services.array.list.query.result";
+    private static final String CITY_NAME_QUERY = "com.example.branko.tester.services.city.name.query";
+
     public static final String ACTION_SHOW_NOTIFICATION = "com.example.david.lab03.SHOW_NOTIFICATION";
+
 
     public CitiesIntentService(){
         super("CitiesIntentService");
@@ -31,15 +35,19 @@ public class CitiesIntentService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         TrafficFetchr fetchr = new TrafficFetchr();
         String query = intent.getStringExtra(EXTRA_QUERY);
+        String arrayListQuery = intent.getStringExtra(ARRAY_LIST_QUERY_RESULT);
+        String cityNameQuery = intent.getStringExtra(CITY_NAME_QUERY);
         try {
             List<CityInfo> cities = fetchr.fetchCities(query);
 
             Bundle resultData = new Bundle();
-            resultData.putParcelableArrayList(FirstPageActivity.CITIES,(ArrayList<CityInfo>)cities);
+            resultData.putParcelableArrayList(arrayListQuery,(ArrayList<CityInfo>)cities);
             Intent i = new Intent(ACTION_SHOW_NOTIFICATION);
             i.putExtras(resultData);
-            String city = intent.getStringExtra(FirstPageActivity.AUTOCOMPLETETEXTVIEWNAME);
-            i.putExtra(FirstPageActivity.AUTOCOMPLETETEXTVIEWNAME, city);
+            if(cityNameQuery != null) {
+                String city = intent.getStringExtra(cityNameQuery);
+                i.putExtra(cityNameQuery, city);
+            }
 
             sendBroadcast(i);
         } catch (IOException e) {
@@ -47,9 +55,11 @@ public class CitiesIntentService extends IntentService {
         }
     }
 
-    public static Intent newIntent(Context packageContext, String query){
+    public static Intent newIntent(Context packageContext, String query, String listNotifier, String cityNotifier){
         Intent i = new Intent(packageContext,CitiesIntentService.class);
         i.putExtra(EXTRA_QUERY,query);
+        i.putExtra(ARRAY_LIST_QUERY_RESULT,listNotifier);
+        i.putExtra(CITY_NAME_QUERY,cityNotifier);
         return i;
     }
 }

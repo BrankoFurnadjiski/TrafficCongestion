@@ -143,7 +143,7 @@ public class FirstPageActivity extends AppCompatActivity {
                 if(charSequence.length() > 1) {
                     String input = charSequence.toString().toLowerCase();
                     String output = input.substring(0, 1).toUpperCase() + input.substring(1);
-                    Intent intent = CitiesIntentService.newIntent(getApplicationContext(), output);
+                    Intent intent = CitiesIntentService.newIntent(getApplicationContext(), output, CITIES, AUTOCOMPLETETEXTVIEWNAME);
                     intent.putExtra(AUTOCOMPLETETEXTVIEWNAME, autocompleteName);
                     startService(intent);
                 }
