@@ -10,7 +10,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.example.branko.tester.model.CityInfo;
 import com.example.branko.tester.services.CitiesIntentService;
@@ -24,36 +26,56 @@ import java.util.List;
 public class CitiesActivity extends AppCompatActivity {
 
     private final String AUTOCOMPLETEEDITTEXTVIEW = "RANDOM";
+    private static final String EXTRA_FIRST_CITY = "com.example.branko.tester.first.city";
+    private static final String EXTRA_SECOND_CITY = "com.example.branko.tester.second.city";
 
+    private CityInfo mFirstCity;
+    private CityInfo mSecodnCity;
 
     private EditText mCityNameEditText;
 
+    private ImageView mCloseSearchImageView;
+
     private RecyclerView mRecyclerView;
+
     private CitiesAdapter mAdapter;
+
     private RecyclerView.LayoutManager mLayoutManager;
 
     private BroadcastReceiver mOnShowCitiesNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             List<CityInfo> cities = intent.getExtras().getParcelableArrayList(AUTOCOMPLETEEDITTEXTVIEW);
+            cities = filterData(cities);
             mAdapter.setCities(cities);
             mAdapter.notifyDataSetChanged();
         }
     };
 
-
+    private List<CityInfo> filterData(List<CityInfo> cities) {
+        CityInfo notNull;
+        if(mFirstCity == null){
+            notNull = mSecodnCity;
+        } else {
+            notNull = mFirstCity;
+        }
+        for(int i = 0; i < cities.size(); ++i) {
+            if(notNull.toString().equals(cities.get(i).toString())){
+                cities.remove(i);
+            }
+        }
+        return cities;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         StatusBarChanger.changeColorForStatusBar(this);
         setContentView(R.layout.activity_cities);
+        getIntentData();
         initViews();
+        initAdapterComponents();
         bindEventListenerForEditText();
-        mLayoutManager = new LinearLayoutManager(CitiesActivity.this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new CitiesAdapter(CitiesActivity.this);
-        mRecyclerView.setAdapter(mAdapter);
     }
 
     @Override
@@ -67,11 +89,25 @@ public class CitiesActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         unregisterReceiver(mOnShowCitiesNotification);
-}
+    }
+
+    private void getIntentData() {
+        mFirstCity = getIntent().getParcelableExtra(EXTRA_FIRST_CITY);
+        mSecodnCity = getIntent().getParcelableExtra(EXTRA_SECOND_CITY);
+    }
 
     private void initViews(){
         mRecyclerView = findViewById(R.id.citiesRecyclerView);
         mCityNameEditText = findViewById(R.id.cityNameEditText);
+        mCloseSearchImageView = findViewById(R.id.closeSearchCities);
+        bindClickListenerToCloseSearchImageView();
+    }
+
+    private void initAdapterComponents() {
+        mLayoutManager = new LinearLayoutManager(CitiesActivity.this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new CitiesAdapter(CitiesActivity.this);
+        mRecyclerView.setAdapter(mAdapter);
     }
 
     private void bindEventListenerForEditText(){
@@ -100,5 +136,31 @@ public class CitiesActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void bindClickListenerToCloseSearchImageView() {
+        mCloseSearchImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CitiesActivity.this.finish();
+            }
+        });
+    }
+
+    public static Intent newIntent(Context packageContext, CityInfo firstCity, CityInfo secondCity) {
+        Intent intent = new Intent(packageContext, CitiesActivity.class);
+        Bundle extras = new Bundle();
+        extras.putParcelable(EXTRA_FIRST_CITY, firstCity);
+        extras.putParcelable(EXTRA_SECOND_CITY, secondCity);
+        intent.putExtras(extras);
+        return intent;
+    }
+
+    public CityInfo getmFirstCity() {
+        return mFirstCity;
+    }
+
+    public CityInfo getmSecodnCity() {
+        return mSecodnCity;
     }
 }

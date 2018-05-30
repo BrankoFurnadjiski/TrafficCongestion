@@ -9,19 +9,47 @@
     android:background="@color/blackBackground"
     tools:context="com.example.branko.tester.CitiesActivity">
 
-
-    <EditText
-        android:id="@+id/cityNameEditText"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:padding="13dp"
-        android:maxLines="1"
-        android:inputType="text"
-        android:textColor="@color/whiteFont"
         android:background="@drawable/search_edit_text_border"
-        android:hint="@string/placeholder"
-        android:textColorHint="@color/whiteFont"/>
+        android:orientation="horizontal"
+        android:layout_margin="8dp">
+
+        <ImageView
+            android:id="@+id/searchIcon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="13dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/ic_search_black_24dp" />
+
+        <EditText
+            android:id="@+id/cityNameEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="9"
+            android:hint="@string/placeholder"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="13dp"
+            android:textColor="@color/whiteFont"
+            android:textColorHint="@color/borderColor"
+            android:background="@null"/>
+
+        <ImageView
+            android:id="@+id/closeSearchCities"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="13dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/ic_close_black_24dp" />
+
+    </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/citiesRecyclerView"

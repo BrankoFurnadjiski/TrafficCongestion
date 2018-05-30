@@ -197,8 +197,12 @@ public class FirstPageActivity extends AppCompatActivity {
             public void onClick(View v) {
                 hideKeyboard();
                 if(mFirstCity != null && mSecondCity != null) {
-                    Intent intent = DetailsActivity.newIntent(FirstPageActivity.this,mFirstCity,mSecondCity);
-                    startActivity(intent);
+                    if(mFirstCity.getName().equals(mSecondCity.getName())){
+                        Toast.makeText(FirstPageActivity.this, getString(R.string.first_page_toast_info_different), Toast.LENGTH_SHORT).show();
+                    } else {
+                        Intent intent = DetailsActivity.newIntent(FirstPageActivity.this, mFirstCity, mSecondCity);
+                        startActivity(intent);
+                    }
                 }
                 else{
                     Toast.makeText(FirstPageActivity.this, getString(R.string.first_page_toast_info), Toast.LENGTH_SHORT).show();

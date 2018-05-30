@@ -11,5 +11,19 @@
     <string name="alert_dialog_title">No Internet connection!</string>
     <string name="alert_dialog_close">Exit application</string>
     <string name="first_page_toast_info">You must choose two cities!</string>
+    <string name="first_page_toast_info_different">You must choose two different cities!</string>
     <string name="placeholder">Enter city name!</string>
+    <string name="darkRedLegend">Extremely slow</string>
+    <string name="redLegend">Slow</string>
+    <string name="orangeLegend">Moderate</string>
+    <string name="greenLegend">Good</string>
+    <string name="greyLegend">No traffic</string>
+    <string name="traffic_comparison">Traffic Comparison</string>
+    <string name="extremely_slow">Extremely slow</string>
+    <string name="slow">Slow</string>
+    <string name="moderate">Moderate</string>
+    <string name="good">Good</string>
+    <string name="no_traffic">No traffic</string>
+    <string name="traffic_conditions">Traffic Conditions</string>
+    <string name="choose_another_city">Choose another city</string>
 </resources>

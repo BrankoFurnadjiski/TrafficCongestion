@@ -2,8 +2,13 @@ package com.example.branko.tester;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.view.GravityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.ImageView;
 
 import com.example.branko.tester.utils.StatusBarChanger;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -20,6 +25,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private double mLatitude;
     private double mLongitude;
 
+    private ImageView mToolbarCloseImageView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +36,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        initToolbars();
     }
 
     @Override
@@ -51,5 +59,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         intent.putExtra(MapActivity.LATITUDE, latitude);
         intent.putExtra(MapActivity.LONGITUDE, longitude);
         return intent;
+    }
+
+    private void initToolbars() {
+        mToolbarCloseImageView = findViewById(R.id.closeMapButtonToolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionbar = getSupportActionBar();
+        if(actionbar != null) {
+            actionbar.setDisplayShowTitleEnabled(false);
+        }
+        bindTooolbarEventListeners();
+    }
+
+    private void bindTooolbarEventListeners() {
+        mToolbarCloseImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MapActivity.this.finish();
+            }
+        });
     }
 }

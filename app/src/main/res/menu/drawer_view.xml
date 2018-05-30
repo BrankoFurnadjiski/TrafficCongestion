@@ -1,17 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <group android:checkableBehavior="single">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single"
+        android:id="@+id/menuTop"
+        >
+
         <item
-            android:id="@+id/nav_camera"
-            android:title="asd" />
+            android:title="@string/choose_another_city"/>
+
         <item
-            android:id="@+id/nav_gallery"
-            android:title="asd" />
+            android:id="@+id/firstCityItem"
+            android:icon="@drawable/ic_add_black_24dp"
+            android:title=""
+            />
+
         <item
-            android:id="@+id/nav_slideshow"
-            android:title="asd" />
+            android:id="@+id/secondCityItem"
+            android:icon="@drawable/ic_add_black_24dp"
+            android:title=""
+            />
+    </group>
+
+    <group
+        android:id="@+id/menuBottom">
+
         <item
-            android:id="@+id/nav_manage"
-            android:title="asd" />
+            android:title="@string/traffic_conditions">
+
+        </item>
+
+        <item
+            android:id="@+id/darkRedColorLegend"
+            android:icon="@drawable/dark_red_square"
+            android:title="@string/extremely_slow"
+            />
+        <item
+            android:id="@+id/redColorLegend"
+            android:icon="@drawable/red_square"
+            android:title="@string/slow"/>
+        <item
+            android:id="@+id/orangeColorLegend"
+            android:icon="@drawable/orange_square"
+            android:title="@string/moderate"
+            />
+        <item
+            android:id="@+id/greenColorLegend"
+            android:icon="@drawable/green_square"
+            android:title="@string/good"
+            />
+        <item
+            android:id="@+id/greyColorLegend"
+            android:icon="@drawable/grey_square"
+            android:title="@string/no_traffic"
+            />
     </group>
 </menu>

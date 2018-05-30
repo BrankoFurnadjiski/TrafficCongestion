@@ -31,15 +31,6 @@
         <activity
             android:name=".FirstPageActivity"
             android:screenOrientation="portrait">
-
-        </activity>
-        <activity
-            android:name=".DetailsActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".MapActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name=".CitiesActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -49,6 +40,15 @@
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
+        </activity>
+        <activity
+            android:name=".DetailsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MapActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".CitiesActivity">
+
         </activity>
     </application>
 

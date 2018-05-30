@@ -6,14 +6,24 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.Display;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.branko.tester.model.CityInfo;
@@ -35,10 +45,12 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.squareup.picasso.Picasso;
 
+import org.xmlpull.v1.XmlPullParser;
+
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class DetailsActivity extends AppCompatActivity {
+public class DetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private static final String EXTRA_FIRST_CITY = "com.example.branko.tester.first.city";
     private static final String EXTRA_SECOND_CITY = "com.example.branko.tester.second.city";
@@ -55,23 +67,33 @@ public class DetailsActivity extends AppCompatActivity {
 
     private ImageView mFirstCityImageMap;
     private ImageView mSecondCityImageView;
+    private ImageView mLoadingGifImageView;
+    private ImageView mToolbarHomeImageView;
+    private ImageView mToolbarBackImageView;
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private TextView mFirstCityName;
     private TextView mSecondCityName;
-    private ImageView mLoadingGifImageView;
+
+    private NavigationView mNavigationView;
 
     private AlertDialog mAlertDialog;
 
+    private DrawerLayout mDrawerLayout;
+
     private boolean mRefreshingState;
     private boolean mLoadingState;
+    private boolean mInitializedComponents;
 
     // USED
     private BroadcastReceiver mOnShowCityDetailsNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            initComponentsForDisplay();
+            if(!mInitializedComponents){
+                initComponentsForDisplay();
+                mInitializedComponents = true;
+            }
             mLoadingState = false;
             mRefreshingState = false;
             mFirstCity = intent.getExtras().getParcelable(EXTRA_FIRST_CITY);
@@ -108,8 +130,8 @@ public class DetailsActivity extends AppCompatActivity {
     // USED
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         StatusBarChanger.changeColorForStatusBar(this);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
         initStates();
         getIntentData();
@@ -124,6 +146,21 @@ public class DetailsActivity extends AppCompatActivity {
         registerReceiver(mOnShowCityDetailsNotification, filter);
         InternetBroadcastReceiver.registerReceiver(mOnInternetStateChangeNotification, DetailsActivity.this);
         startCityDetailsIntentService();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)){
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mInitializedComponents = false;
     }
 
     @Override
@@ -132,6 +169,35 @@ public class DetailsActivity extends AppCompatActivity {
         unregisterReceiver(mOnShowCityDetailsNotification);
         InternetBroadcastReceiver.unregisterReceiver(mOnInternetStateChangeNotification, DetailsActivity.this);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                return true;
+            case android.R.id.closeButton:
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.firstCityItem){
+            Intent intent = CitiesActivity.newIntent(DetailsActivity.this, null, mSecondCity);
+            startActivity(intent);
+            return true;
+        }
+        else if(id == R.id.secondCityItem){
+            Intent intent = CitiesActivity.newIntent(DetailsActivity.this, mFirstCity, null);
+            startActivity(intent);
+            return true;
+        }
+        return false;
+    }
+
 
     // USED
     public static Intent newIntent(Context packageContext, CityInfo firstCity, CityInfo secondCity) {
@@ -156,6 +222,7 @@ public class DetailsActivity extends AppCompatActivity {
     private void initStates() {
         mRefreshingState = false;
         mLoadingState = false;
+        mInitializedComponents = false;
     }
 
     private void initViewForGif() {
@@ -177,11 +244,25 @@ public class DetailsActivity extends AppCompatActivity {
 
     private void initComponentsForDisplay() {
         setContentView(R.layout.activity_details);
+        initNavigationView();
+        initToolbars();
         initSwipe();
         initTextViews();
         initPieCharts();
         initBarChart();
         initImageMaps();
+    }
+
+    private void initToolbars() {
+        mToolbarBackImageView = findViewById(R.id.closeButtonToolbar);
+        mToolbarHomeImageView = findViewById(R.id.homeButtonToolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionbar = getSupportActionBar();
+        if(actionbar != null) {
+            actionbar.setDisplayShowTitleEnabled(false);
+        }
+        bindTooolbarEventListeners();
     }
 
     private void initSwipe() {
@@ -205,6 +286,16 @@ public class DetailsActivity extends AppCompatActivity {
     private void startCityDetailsIntentService() {
         Intent intent = CityDetailsIntentService.newIntent(DetailsActivity.this, mFirstCity, mSecondCity);
         startService(intent);
+    }
+
+    private void initNavigationView(){
+        mDrawerLayout = findViewById(R.id.nav_drawer_layout);
+        mNavigationView = findViewById(R.id.nav_view);
+        mNavigationView.setItemIconTintList(null);
+        mNavigationView.setBackgroundColor(Color.parseColor("#111111"));
+        mNavigationView.getMenu().getItem(1).setTitle(mFirstCity.getName());
+        mNavigationView.getMenu().getItem(2).setTitle(mSecondCity.getName());
+        bindNavigationViewListner();
     }
 
     private void initPieCharts() {
@@ -237,9 +328,7 @@ public class DetailsActivity extends AppCompatActivity {
 
     private void populateCharts(CityInfo cityInfo, PieChart trafficPieChart, PieChart CO2PieChart) {
         populateTrafficPieChart(cityInfo, trafficPieChart);
-
         populateCO2PieChart(cityInfo, CO2PieChart);
-
     }
 
     private void populateTrafficPieChart(CityInfo cityInfo, PieChart trafficPieChart) {
@@ -329,6 +418,25 @@ public class DetailsActivity extends AppCompatActivity {
         Double y = 250 * factor;
 
         Picasso.with(this).load(url).resize(x.intValue(), y.intValue()).into(image);
+    }
+
+    private void bindNavigationViewListner() {
+        mNavigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void bindTooolbarEventListeners() {
+        mToolbarHomeImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        mToolbarBackImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DetailsActivity.this.finish();
+            }
+        });
     }
 
     private void bindClickEventListenerForFirstCityImageMap() {
