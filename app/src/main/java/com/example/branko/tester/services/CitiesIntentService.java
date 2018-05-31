@@ -22,7 +22,7 @@ public class CitiesIntentService extends IntentService {
 
     private static final String EXTRA_QUERY="com.example.branko.tester.services.query";
     private static final String ARRAY_LIST_QUERY_RESULT = "com.example.branko.tester.services.array.list.query.result";
-    private static final String CITY_NAME_QUERY = "com.example.branko.tester.services.city.name.query";
+    public static final String CITY_NAME_QUERY = "com.example.branko.tester.services.city.name.query";
 
     public static final String ACTION_SHOW_NOTIFICATION = "com.example.david.lab03.SHOW_NOTIFICATION";
 

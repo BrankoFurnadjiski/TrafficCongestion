@@ -1,12 +1,15 @@
 package com.example.branko.tester;
 
+import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -16,11 +19,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +40,8 @@ import com.example.branko.tester.utils.InternetConnectionChecker;
 import com.example.branko.tester.utils.StatusBarChanger;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -41,13 +49,24 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.DefaultValueFormatter;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.squareup.picasso.Picasso;
 
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class DetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
@@ -65,11 +84,11 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
 
     private BarChart mBarChart;
 
-    private ImageView mFirstCityImageMap;
-    private ImageView mSecondCityImageView;
     private ImageView mLoadingGifImageView;
     private ImageView mToolbarHomeImageView;
     private ImageView mToolbarBackImageView;
+    private ImageView mInfoLegendFirstCity;
+    private ImageView mInfoLegendSecondCity;
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -84,29 +103,28 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
 
     private boolean mRefreshingState;
     private boolean mLoadingState;
-    private boolean mInitializedComponents;
+    private boolean mStartService;
+
+
 
     // USED
     private BroadcastReceiver mOnShowCityDetailsNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(!mInitializedComponents){
-                initComponentsForDisplay();
-                mInitializedComponents = true;
-            }
+            initComponentsForDisplay();
             mLoadingState = false;
             mRefreshingState = false;
             mFirstCity = intent.getExtras().getParcelable(EXTRA_FIRST_CITY);
             mSecondCity = intent.getExtras().getParcelable(EXTRA_SECOND_CITY);
             // POPULATE DATA
             populateTextViews();
-            populateImageMaps();
             populateCharts(mFirstCity, mFirstCityTrafficPieChart, mFirstCityCO2PieChart);
             populateCharts(mSecondCity, mSecondCityTrafficPieChart, mSecondCityCO2PieChart);
             populateBarChart();
             if (mSwipeRefreshLayout.isRefreshing()) {
                 setChartsAfterSwipe();
             }
+            Log.i("BROADCASTRECEIVER","THEEND");
         }
     };
 
@@ -137,6 +155,7 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
         getIntentData();
         initViewForGif();
         initAlertDialog();
+        mStartService = true;
     }
 
     @Override
@@ -145,8 +164,10 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
         IntentFilter filter = new IntentFilter(CityDetailsIntentService.ACTION_SHOW_NOTIFICATION);
         registerReceiver(mOnShowCityDetailsNotification, filter);
         InternetBroadcastReceiver.registerReceiver(mOnInternetStateChangeNotification, DetailsActivity.this);
-        startCityDetailsIntentService();
-
+        if(mStartService) {
+            startCityDetailsIntentService();
+            mStartService = false;
+        }
     }
 
     @Override
@@ -154,13 +175,14 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
         super.onResume();
         if(mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)){
             mDrawerLayout.closeDrawer(GravityCompat.START);
+            mNavigationView.getMenu().getItem(1).setChecked(false);
+            mNavigationView.getMenu().getItem(2).setChecked(false);
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mInitializedComponents = false;
     }
 
     @Override
@@ -198,6 +220,47 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
         return false;
     }
 
+    public OnMapReadyCallback onMapReadyFirstCityCallback(){
+        return new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                Log.i("BOBECCCC","NAAAAAAAAA");
+                LatLng place = new LatLng(mFirstCity.getLat(), mFirstCity.getLon());
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 12));
+                googleMap.setTrafficEnabled(true);
+                googleMap.getUiSettings().setScrollGesturesEnabled(false);
+                googleMap.getUiSettings().setZoomGesturesEnabled(false);
+                googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(LatLng latLng) {
+                        Intent intent = MapActivity.newIntent(DetailsActivity.this, mFirstCity.getLat(), mFirstCity.getLon());
+                        startActivity(intent);
+                    }
+                });
+            }
+        };
+    }
+
+    public OnMapReadyCallback onMapReadySecondCityCallback(){
+        return new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                LatLng place = new LatLng(mSecondCity.getLat(), mSecondCity.getLon());
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 12));
+                googleMap.setTrafficEnabled(true);
+                googleMap.getUiSettings().setScrollGesturesEnabled(false);
+                googleMap.getUiSettings().setZoomGesturesEnabled(false);
+                googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(LatLng latLng) {
+                        Intent intent = MapActivity.newIntent(DetailsActivity.this, mSecondCity.getLat(), mSecondCity.getLon());
+                        startActivity(intent);
+                    }
+                });
+            }
+        };
+    }
+
 
     // USED
     public static Intent newIntent(Context packageContext, CityInfo firstCity, CityInfo secondCity) {
@@ -222,7 +285,6 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
     private void initStates() {
         mRefreshingState = false;
         mLoadingState = false;
-        mInitializedComponents = false;
     }
 
     private void initViewForGif() {
@@ -244,13 +306,32 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
 
     private void initComponentsForDisplay() {
         setContentView(R.layout.activity_details);
+        initMapFragments();
         initNavigationView();
         initToolbars();
         initSwipe();
         initTextViews();
         initPieCharts();
         initBarChart();
-        initImageMaps();
+        initInfoLegendViews();
+    }
+
+    private void initMapFragments() {
+        SupportMapFragment firstCityMapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.firstCityMap);
+            firstCityMapFragment.getMapAsync(onMapReadyFirstCityCallback());
+
+        SupportMapFragment secondCityMapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.secondCityMap);
+        secondCityMapFragment.getMapAsync(onMapReadySecondCityCallback());
+
+
+    }
+
+    private void initInfoLegendViews() {
+        mInfoLegendFirstCity = findViewById(R.id.infoLegendFirstCity);
+        mInfoLegendSecondCity = findViewById(R.id.infoLegendSecondCity);
+        bindClickListenerForInfoLegendViews();
     }
 
     private void initToolbars() {
@@ -273,6 +354,7 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
     private void initTextViews() {
         mFirstCityName = findViewById(R.id.firstCityName);
         mSecondCityName = findViewById(R.id.secondCityName);
+        bindClickEventListenerForTextViews();
     }
 
     // USED
@@ -308,17 +390,6 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
 
     private void initBarChart() {
         mBarChart = findViewById(R.id.barChart);
-    }
-
-    private void initImageMaps() {
-        mFirstCityImageMap = findViewById(R.id.firstCityImageMap);
-        mSecondCityImageView = findViewById(R.id.secondCityImageMap);
-        bindClickEventListenerForFirstCityImageMap();
-        bindClickEventListenerForSecondCityImageMap();
-    }
-
-    private String getURL(CityInfo cityInfo) {
-        return String.format(Locale.US, "https://maps.googleapis.com/maps/api/staticmap?center=%.5f,%.5f&zoom=13&size=500x250&key=AIzaSyAxyzqcHYdOKtwdaOTJKGsA9k9UJaeb1gQ", cityInfo.getLat(), cityInfo.getLon());
     }
 
     private void populateTextViews() {
@@ -386,38 +457,77 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
         ArrayList<BarEntry> firstCityGroup = mFirstCity.getBarEntries();
         ArrayList<BarEntry> secondCityGroup = mSecondCity.getBarEntries();
 
-        BarDataSet firstCitySet = new BarDataSet(firstCityGroup, "Group 1");
-        BarDataSet secondCitySet = new BarDataSet(secondCityGroup, "Group 2");
+        BarDataSet firstCitySet = new BarDataSet(firstCityGroup, mFirstCity.getName());
+        firstCitySet.setColor(Color.BLUE);
+        BarDataSet secondCitySet = new BarDataSet(secondCityGroup, mSecondCity.getName());
+        secondCitySet.setColor(Color.RED);
 
         float groupSpace = 0.1f;
         float barSpace = 0.05f; // x3 DataSet
         float barWidth = 0.4f; // x3 DataSet
 
+        final List<String> xValues = new ArrayList<>();
+        for(int i = 0; i < 3; ++i) {
+            xValues.add("Extremely slow");
+            xValues.add("Medium");
+            xValues.add("Slow");
+        }
+
+        XAxis xAxis = mBarChart.getXAxis();
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            boolean go = false;
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                if(!go){
+                    go = true;
+                    return "";
+                }
+                go = false;
+                return xValues.get((int)value);
+            }
+        });
+
         BarData data = new BarData(firstCitySet, secondCitySet);
+        data.setValueTextColor(Color.WHITE);
+        data.setValueTextSize(10);
         data.setBarWidth(barWidth);
+
         mBarChart.setData(data);
+        mBarChart.setScaleEnabled(false);
+        mBarChart.setTouchEnabled(false);
+
+        mBarChart.getAxisLeft().setTextColor(Color.WHITE);
+        mBarChart.getAxisLeft().setTextSize(12);
+
+        mBarChart.getAxisRight().setTextColor(Color.WHITE);
+        mBarChart.getAxisRight().setTextSize(12);
+
+        mBarChart.getLegend().setTextColor(Color.WHITE);
+        mBarChart.getLegend().setTextSize(14);
+
+        mBarChart.getXAxis().setTextColor(Color.WHITE);
+        mBarChart.getXAxis().setTextSize(12);
+        mBarChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        mBarChart.getDescription().setEnabled(false);
         mBarChart.groupBars(0.5f, groupSpace, barSpace); // perform the "explicit" grouping
         mBarChart.invalidate(); // refresh
     }
 
-    private void populateImageMaps() {
-        String firstCityUrl = getURL(mFirstCity);
-        String secondCityUrl = getURL(mSecondCity);
-
-        populateMapImage(firstCityUrl, mFirstCityImageMap);
-        populateMapImage(secondCityUrl, mSecondCityImageView);
-    }
-
-    private void populateMapImage(String url, ImageView image) {
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x - 150;
-        double factor = width / 500.0;
-        Double x = 500 * factor;
-        Double y = 250 * factor;
-
-        Picasso.with(this).load(url).resize(x.intValue(), y.intValue()).into(image);
+    private void bindClickListenerForInfoLegendViews() {
+        mInfoLegendSecondCity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        mInfoLegendFirstCity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
     }
 
     private void bindNavigationViewListner() {
@@ -439,21 +549,18 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
         });
     }
 
-    private void bindClickEventListenerForFirstCityImageMap() {
-        mFirstCityImageMap.setOnClickListener(new View.OnClickListener() {
+    private void bindClickEventListenerForTextViews(){
+        mFirstCityName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = MapActivity.newIntent(DetailsActivity.this, mFirstCity.getLat(), mFirstCity.getLon());
+                Intent intent = CitiesActivity.newIntent(DetailsActivity.this, null, mSecondCity);
                 startActivity(intent);
             }
         });
-    }
-
-    private void bindClickEventListenerForSecondCityImageMap() {
-        mSecondCityImageView.setOnClickListener(new View.OnClickListener() {
+        mSecondCityName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = MapActivity.newIntent(DetailsActivity.this, mSecondCity.getLat(), mSecondCity.getLon());
+                Intent intent = CitiesActivity.newIntent(DetailsActivity.this, mFirstCity, null);
                 startActivity(intent);
             }
         });

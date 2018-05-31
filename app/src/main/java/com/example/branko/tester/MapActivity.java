@@ -41,10 +41,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void onMapReady(GoogleMap map) {
-        LatLng sydney = new LatLng(mLatitude, mLongitude);
+        LatLng place = new LatLng(mLatitude, mLongitude);
 
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 13));
-
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 13));
         map.setTrafficEnabled(true);
     }
 

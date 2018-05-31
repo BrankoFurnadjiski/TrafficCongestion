@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -27,9 +28,13 @@ import com.example.branko.tester.services.CitiesIntentService;
 import com.example.branko.tester.utils.AlertDialogBuilder;
 import com.example.branko.tester.utils.InternetBroadcastReceiver;
 import com.example.branko.tester.utils.StatusBarChanger;
+import com.example.branko.tester.utils.TrafficFetchr;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class FirstPageActivity extends AppCompatActivity {
 
@@ -52,6 +57,16 @@ public class FirstPageActivity extends AppCompatActivity {
 
     private ArrayAdapter<String> mAdapter;
 
+    private AlertDialog mAlertDialog;
+
+
+    private BroadcastReceiver mOnInternetStateChangeNotification = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            AlertDialogBuilder.displayAlertDialogFirstActivity  (context, mAlertDialog);
+        }
+    };
+
     private BroadcastReceiver mOnShowCitiesNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -70,15 +85,6 @@ public class FirstPageActivity extends AppCompatActivity {
                 mAutocompleteTextViewSecondCity.setAdapter(mAdapter);
             }
 
-        }
-    };
-
-    private AlertDialog mAlertDialog;
-
-    private BroadcastReceiver mOnInternetStateChangeNotification = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            AlertDialogBuilder.displayAlertDialogFirstActivity  (context, mAlertDialog);
         }
     };
 
@@ -128,6 +134,7 @@ public class FirstPageActivity extends AppCompatActivity {
 
     public void bindTextEventListener(final AutoCompleteTextView autocompleteTextView, final String autocompleteName){
         autocompleteTextView.addTextChangedListener(new TextWatcher() {
+
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
@@ -140,7 +147,7 @@ public class FirstPageActivity extends AppCompatActivity {
                 if(autocompleteName.equals(SECOND_CITY)){
                     mSecondCity = null;
                 }
-                if(charSequence.length() > 1) {
+                if(charSequence.length() > 1 ) {
                     String input = charSequence.toString().toLowerCase();
                     String output = input.substring(0, 1).toUpperCase() + input.substring(1);
                     Intent intent = CitiesIntentService.newIntent(getApplicationContext(), output, CITIES, AUTOCOMPLETETEXTVIEWNAME);
