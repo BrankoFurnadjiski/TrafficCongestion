@@ -138,6 +138,122 @@
                         android:layout_width="match_parent"
                         android:layout_height="300dp"
                         />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/dark_red_square"
+                            android:text="Dark Red:"
+                            android:textAlignment="center"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="Line on the map indicates extremely slow or stopped traffic"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/red_square"
+                            android:text="Red:"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="Traffic is moving slow and could indicate an accident or congestion on that route"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/orange_square"
+                            android:text="Orange:"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="The traffic is a little better, but still not the best"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/green_square"
+                            android:text="Green:"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="Good traffic conditions"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/grey_square"
+                            android:text="Grey:"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="There’s no traffic information available at the time"/>
+                    </LinearLayout>
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -273,6 +389,121 @@
                         android:layout_width="match_parent"
                         android:layout_height="300dp"
                         />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/dark_red_square"
+                            android:text="Dark Red:"
+                            android:textAlignment="center"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="Line on the map indicates extremely slow or stopped traffic"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/red_square"
+                            android:text="Red:"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="Traffic is moving slow and could indicate an accident or congestion on that route"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/orange_square"
+                            android:text="Orange:"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="The traffic is a little better, but still not the best"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/green_square"
+                            android:text="Green:"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="Good traffic conditions"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/grey_square"
+                            android:text="Grey:"
+                            android:textColor="@color/white"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"/>
+
+                        <TextView
+                            android:layout_marginStart="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:text="There’s no traffic information available at the time"/>
+                    </LinearLayout>
 
                 </LinearLayout>
 

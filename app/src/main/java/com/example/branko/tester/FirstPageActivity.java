@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -28,9 +29,7 @@ import com.example.branko.tester.services.CitiesIntentService;
 import com.example.branko.tester.utils.AlertDialogBuilder;
 import com.example.branko.tester.utils.InternetBroadcastReceiver;
 import com.example.branko.tester.utils.StatusBarChanger;
-import com.example.branko.tester.utils.TrafficFetchr;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -58,7 +57,6 @@ public class FirstPageActivity extends AppCompatActivity {
     private ArrayAdapter<String> mAdapter;
 
     private AlertDialog mAlertDialog;
-
 
     private BroadcastReceiver mOnInternetStateChangeNotification = new BroadcastReceiver() {
         @Override
@@ -141,6 +139,12 @@ public class FirstPageActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(final Editable editable) {
+
+                String charSequence = editable.toString();
                 if(autocompleteName.equals(FIRST_CITY)){
                     mFirstCity = null;
                 }
@@ -154,10 +158,6 @@ public class FirstPageActivity extends AppCompatActivity {
                     intent.putExtra(AUTOCOMPLETETEXTVIEWNAME, autocompleteName);
                     startService(intent);
                 }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
 
             }
         });

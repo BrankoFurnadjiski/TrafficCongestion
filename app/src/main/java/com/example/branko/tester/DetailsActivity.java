@@ -104,6 +104,7 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
     private boolean mRefreshingState;
     private boolean mLoadingState;
     private boolean mStartService;
+    private boolean mInitialize;
 
 
 
@@ -111,7 +112,10 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
     private BroadcastReceiver mOnShowCityDetailsNotification = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            initComponentsForDisplay();
+            if(mInitialize){
+                initComponentsForDisplay();
+                mInitialize = false;
+            }
             mLoadingState = false;
             mRefreshingState = false;
             mFirstCity = intent.getExtras().getParcelable(EXTRA_FIRST_CITY);
@@ -156,6 +160,7 @@ public class DetailsActivity extends AppCompatActivity implements NavigationView
         initViewForGif();
         initAlertDialog();
         mStartService = true;
+        mInitialize = true;
     }
 
     @Override
